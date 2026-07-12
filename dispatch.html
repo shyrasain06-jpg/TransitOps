@@ -260,25 +260,42 @@
 
     .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 12.5px; grid-column: 1 / -1; }
 
-    #dispatch-toast {
-      position: fixed;
-      bottom: 24px; right: 24px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius-lg);
-      padding: 12px 16px;
-      display: flex; align-items: center; gap: 10px;
-      box-shadow: var(--shadow-lg);
-      font-size: 12.5px; font-weight: 500;
-      color: var(--text-primary);
-      opacity: 0; transform: translateY(12px);
-      transition: all .28s ease;
-      pointer-events: none; z-index: 999;
-      max-width: 310px;
-    }
-    #dispatch-toast.show { opacity: 1; transform: translateY(0); }
-    #dispatch-toast .t-icon { color: var(--accent-primary); display: flex; }
-    #dispatch-toast .t-icon svg { width: 15px; height: 15px; fill: currentColor; }
+    
+    #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:9999;pointer-events:none}
+    .toast{display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:12px 18px;box-shadow:var(--shadow-lg);font-size:12.5px;font-weight:500;color:var(--text-primary);min-width:240px;max-width:340px;transform:translateX(120%);opacity:0;transition:transform 0.32s cubic-bezier(.22,1,.36,1),opacity 0.32s ease;pointer-events:all}
+    .toast.show{transform:translateX(0);opacity:1}
+    .toast-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:800}
+    .toast-success .toast-icon{background:var(--status-active-bg);color:var(--status-active)}
+    .toast-error .toast-icon{background:var(--status-alert-bg);color:var(--status-alert)}
+    .toast-info .toast-icon{background:var(--status-completed-bg);color:var(--status-completed)}
+    .toast-warn .toast-icon{background:var(--status-delayed-bg);color:var(--status-delayed)}
+    .toast-success{border-left:3px solid var(--status-active)}
+    .toast-error{border-left:3px solid var(--status-alert)}
+    .toast-info{border-left:3px solid var(--status-completed)}
+    .toast-warn{border-left:3px solid var(--status-delayed)}
+    .toast-msg{flex:1;line-height:1.4}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0;line-height:1}
+    
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:8000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.22s ease}
+    .modal-overlay.open{opacity:1;pointer-events:all}
+    .modal-box{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-xl);padding:26px 28px;width:100%;max-width:480px;box-shadow:var(--shadow-lg);transform:scale(.94) translateY(12px);transition:transform 0.26s cubic-bezier(.22,1,.36,1),opacity 0.26s ease;opacity:0}
+    .modal-overlay.open .modal-box{transform:scale(1) translateY(0);opacity:1}
+    .modal-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-subtle)}
+    .modal-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+    .modal-icon-green{background:var(--status-active-bg);color:var(--status-active)}
+    .modal-icon-red{background:var(--status-alert-bg);color:var(--status-alert)}
+    .modal-icon-blue{background:var(--status-completed-bg);color:var(--status-completed)}
+    .modal-icon-amber{background:var(--status-delayed-bg);color:var(--status-delayed)}
+    .modal-title{font-size:15px;font-weight:800;color:var(--text-primary)}
+    .modal-subtitle{font-size:11px;color:var(--text-muted);margin-top:1px}
+    .modal-body{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px}
+    .modal-body strong{color:var(--text-primary)}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+    .modal-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:12.5px}
+    .modal-row:last-child{border-bottom:none}
+    .modal-row-label{color:var(--text-muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+    .modal-row-val{color:var(--text-primary);font-weight:600}
+    .modal-row-mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--accent-primary)}
 
     .theme-toggle-wrap{display:flex;align-items:center;gap:7px}
     #theme-toggle-input{display:none}
@@ -722,93 +739,209 @@
     </main>
   </div>
 </div>
-
-<div id="dispatch-toast" role="alert" aria-live="assertive">
-  <span class="t-icon"><svg><use href="#icon-check"/></svg></span>
-  <span id="toast-message">Route dispatched.</span>
+<div id="toast-container" aria-live="polite"></div>
+<div class="modal-overlay" id="modal-route" role="dialog" aria-modal="true" aria-labelledby="modal-route-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon modal-icon-green" id="modal-route-icon">🚌</div>
+      <div>
+        <div class="modal-title" id="modal-route-title">Route Details</div>
+        <div class="modal-subtitle" id="modal-route-sub">Live route information</div>
+      </div>
+    </div>
+    <div id="modal-route-rows"></div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-route')">Close</button>
+      <button class="btn btn-danger btn-sm" onclick="promptCancel(currentRouteId)">Cancel Route</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-cancel" role="dialog" aria-modal="true" aria-labelledby="modal-cancel-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon modal-icon-red">⚠</div>
+      <div>
+        <div class="modal-title" id="modal-cancel-title">Cancel Route?</div>
+        <div class="modal-subtitle">This action will notify the driver immediately.</div>
+      </div>
+    </div>
+    <div class="modal-body">Are you sure you want to cancel <strong id="cancel-route-name"></strong>? The vehicle will be marked idle and the driver will receive an alert.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cancel')">Keep Active</button>
+      <button class="btn btn-danger" onclick="confirmCancel()">Yes, Cancel Route</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-call" role="dialog" aria-modal="true" aria-labelledby="modal-call-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon modal-icon-blue">📞</div>
+      <div>
+        <div class="modal-title" id="modal-call-title">Contact Driver</div>
+        <div class="modal-subtitle" id="modal-call-sub">Route communication</div>
+      </div>
+    </div>
+    <div class="modal-body" style="margin-bottom:0">
+      <div class="modal-row"><span class="modal-row-label">Driver</span><span class="modal-row-val" id="call-driver-name">—</span></div>
+      <div class="modal-row"><span class="modal-row-label">Vehicle</span><span class="modal-row-val modal-row-mono" id="call-vehicle">—</span></div>
+      <div class="modal-row"><span class="modal-row-label">Phone</span><span class="modal-row-val" id="call-phone">—</span></div>
+      <div class="modal-row"><span class="modal-row-label">Status</span><span class="modal-row-val" id="call-status">—</span></div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-call')">Cancel</button>
+      <button class="btn btn-primary" onclick="initiateCall()">📞 Call Now</button>
+    </div>
+  </div>
 </div>
 
 <script>
+  
   const clockEl = document.getElementById('live-clock');
-  function tick() {
-    clockEl.textContent = new Date().toLocaleTimeString('en-IN', { hour12: false });
-  }
-  tick(); setInterval(tick, 1000);
+  function tick() { clockEl.textContent = new Date().toLocaleTimeString('en-IN',{hour12:false}); }
+  tick(); setInterval(tick,1000);
 
-  const toast = document.getElementById('dispatch-toast');
-  const toastMsg = document.getElementById('toast-message');
-  let tt = null;
-  function showToast(msg, sym) {
-    toast.querySelector('.t-icon').innerHTML = '<svg><use href="#' + (sym || 'icon-check') + '"/></svg>';
-    toastMsg.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(tt);
-    tt = setTimeout(() => toast.classList.remove('show'), 3600);
-  }
-
-  document.getElementById('dispatch-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const v = document.getElementById('vehicle-select').value;
-    const d = document.getElementById('driver-select').value;
-    const r = document.getElementById('route-destination').value.trim();
-    const t = document.getElementById('depart-time').value;
-    if (!v || !d || !r || !t) { showToast('Fill all required fields.', 'icon-bell'); return; }
-    const vt = document.getElementById('vehicle-select').selectedOptions[0].text.split(' â€” ')[0];
-    const dt = document.getElementById('driver-select').selectedOptions[0].text.replace(/^D-\d+ â€” /, '');
-    showToast(vt + ' dispatched with ' + dt + '.', 'icon-check');
-    const btn = document.getElementById('btn-dispatch');
-    btn.textContent = 'Dispatched';
-    btn.style.background = 'var(--status-active)';
-    setTimeout(() => {
-      btn.textContent = 'Dispatch';
-      btn.style.background = '';
-      this.reset();
-      setTime();
-    }, 2200);
-  });
-
-  const tabs = document.querySelectorAll('.filter-tab');
-  const cards = document.querySelectorAll('.route-card');
-  tabs.forEach(tab => tab.addEventListener('click', () => {
-    tabs.forEach(t => { t.classList.remove('active-tab'); t.setAttribute('aria-selected', 'false'); });
-    tab.classList.add('active-tab'); tab.setAttribute('aria-selected', 'true');
-    const f = tab.dataset.filter;
-    let v = 0;
-    cards.forEach(c => { const m = f === 'all' || c.dataset.status === f; c.style.display = m ? '' : 'none'; if (m) v++; });
-    let em = document.getElementById('empty-state');
-    if (v === 0) {
-      if (!em) {
-        em = document.createElement('div');
-        em.id = 'empty-state'; em.className = 'empty-state';
-        em.textContent = 'No routes match this filter.';
-        document.getElementById('route-list').appendChild(em);
-      }
-    } else if (em) em.remove();
-  }));
-
-  document.getElementById('route-search').addEventListener('input', function() {
-    const q = this.value.toLowerCase();
-    cards.forEach(c => { c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none'; });
-  });
-
-  function setTime() {
-    const n = new Date();
-    document.getElementById('depart-time').value =
-      String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
-  }
-  setTime();
-
+  
   (function(){
-    var STORAGE_KEY='transitops-theme';
-    var sheet=document.getElementById('theme-stylesheet');
-    var toggle=document.getElementById('theme-toggle-input');
-    var saved=localStorage.getItem(STORAGE_KEY);
+    const sheet=document.getElementById('theme-stylesheet');
+    const toggle=document.getElementById('theme-toggle-input');
+    const saved=localStorage.getItem('transitops-theme');
     if(saved==='dark'){sheet.href='style-dark.css';toggle.checked=true;}
     toggle.addEventListener('change',function(){
-      if(this.checked){sheet.href='style-dark.css';localStorage.setItem(STORAGE_KEY,'dark');}
-      else{sheet.href='style.css';localStorage.setItem(STORAGE_KEY,'light');}
+      sheet.href=this.checked?'style-dark.css':'style.css';
+      localStorage.setItem('transitops-theme',this.checked?'dark':'light');
     });
   })();
+
+  
+  function showToast(msg,type='success',duration=3500){
+    const icons={success:'✓',error:'✕',info:'i',warn:'!'};
+    const c=document.getElementById('toast-container');
+    const t=document.createElement('div');
+    t.className=`toast toast-${type}`;
+    t.innerHTML=`<div class="toast-icon">${icons[type]||'i'}</div><div class="toast-msg">${msg}</div><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+    c.appendChild(t);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+    setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},duration);
+  }
+
+  
+  function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+  function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+  document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id);}));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id));});
+
+  
+  const routeData={
+    'BUS-017':{name:'Andheri ↔ Thane Express',driver:'Ravi Kumar',phone:'+91 98201 34567',status:'Active',dep:'08:10',eta:'09:45',progress:'78%',stops:'7 of 9'},
+    'MIN-003':{name:'Bandra to Kurla Link',driver:'Suresh Nair',phone:'+91 97305 88210',status:'Delayed',dep:'08:45',eta:'10:20',progress:'45%',stops:'4 of 8'},
+    'COA-002':{name:'Airport Shuttle',driver:'Deepak Yadav',phone:'+91 96780 22134',status:'Active',dep:'09:00',eta:'10:15',progress:'60%',stops:'3 of 5'},
+    'BUS-004':{name:'Dadar Local Loop',driver:'Amit Tiwari',phone:'+91 99870 45601',status:'Alert',dep:'07:55',eta:'09:30',progress:'92%',stops:'11 of 12'},
+    'BUS-011':{name:'Malad to CST',driver:'Pradeep Singh',phone:'+91 98765 11230',status:'Idle',dep:'—',eta:'—',progress:'0%',stops:'—'},
+    'MIN-007':{name:'Powai Feeder',driver:'Karan Joshi',phone:'+91 97654 88901',status:'Active',dep:'09:35',eta:'10:50',progress:'11%',stops:'1 of 9'},
+  };
+  let currentRouteId=null,currentCancelName=null;
+
+  
+  document.querySelectorAll('.route-card').forEach(card=>{
+    card.style.cursor='pointer';
+    const tag=card.querySelector('.vehicle-tag');
+    if(!tag)return;
+    const rid=tag.textContent.trim();
+    const data=routeData[rid];
+    card.addEventListener('click',e=>{
+      if(e.target.closest('button'))return;
+      if(!data)return;
+      currentRouteId=rid;
+      document.getElementById('modal-route-title').textContent=rid;
+      document.getElementById('modal-route-sub').textContent=data.name;
+      document.getElementById('modal-route-rows').innerHTML=`
+        <div class="modal-row"><span class="modal-row-label">Driver</span><span class="modal-row-val">${data.driver}</span></div>
+        <div class="modal-row"><span class="modal-row-label">Status</span><span class="modal-row-val">${data.status}</span></div>
+        <div class="modal-row"><span class="modal-row-label">Departure</span><span class="modal-row-val modal-row-mono">${data.dep}</span></div>
+        <div class="modal-row"><span class="modal-row-label">ETA</span><span class="modal-row-val modal-row-mono">${data.eta}</span></div>
+        <div class="modal-row"><span class="modal-row-label">Progress</span><span class="modal-row-val">${data.progress} complete</span></div>
+        <div class="modal-row"><span class="modal-row-label">Stops</span><span class="modal-row-val">${data.stops}</span></div>
+      `;
+      openModal('modal-route');
+    });
+    
+    const callBtn=card.querySelector('[title="Call"]');
+    if(callBtn&&data){
+      callBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        document.getElementById('modal-call-sub').textContent=data.name;
+        document.getElementById('call-driver-name').textContent=data.driver;
+        document.getElementById('call-vehicle').textContent=rid;
+        document.getElementById('call-phone').textContent=data.phone;
+        document.getElementById('call-status').textContent=data.status;
+        openModal('modal-call');
+      });
+    }
+  });
+
+  
+  function promptCancel(rid){
+    closeModal('modal-route');
+    const data=routeData[rid];
+    currentCancelName=data?data.name:rid;
+    document.getElementById('cancel-route-name').textContent=currentCancelName;
+    setTimeout(()=>openModal('modal-cancel'),200);
+  }
+  function confirmCancel(){
+    closeModal('modal-cancel');
+    showToast(`Route <strong>${currentCancelName}</strong> cancelled. Driver notified.`,'warn',4000);
+  }
+
+  
+  function initiateCall(){
+    const name=document.getElementById('call-driver-name').textContent;
+    closeModal('modal-call');
+    showToast(`Connecting to <strong>${name}</strong>…`,'info');
+  }
+
+  
+  document.getElementById('dispatch-form').addEventListener('submit',function(e){
+    e.preventDefault();
+    const v=document.getElementById('vehicle-select').value;
+    const d=document.getElementById('driver-select').value;
+    const r=document.getElementById('route-destination').value.trim();
+    const t=document.getElementById('depart-time').value;
+    if(!v||!d||!r||!t){showToast('Please fill all required fields.','error');return;}
+    const vt=document.getElementById('vehicle-select').selectedOptions[0].text.split(/\s[—–-]\s/)[0];
+    const dt=document.getElementById('driver-select').selectedOptions[0].text.replace(/^D-\d+\s[—–-]\s/,'');
+    showToast(`<strong>${vt}</strong> dispatched with <strong>${dt}</strong>.`,'success');
+    const btn=document.getElementById('btn-dispatch');
+    btn.textContent='Dispatched ✓';
+    btn.style.background='var(--status-active)';
+    setTimeout(()=>{btn.textContent='Dispatch';btn.style.background='';this.reset();setTime();},2200);
+  });
+
+  
+  const tabs=document.querySelectorAll('.filter-tab');
+  const cards=document.querySelectorAll('.route-card');
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{
+    tabs.forEach(t=>{t.classList.remove('active-tab');t.setAttribute('aria-selected','false');});
+    tab.classList.add('active-tab');tab.setAttribute('aria-selected','true');
+    const f=tab.dataset.filter;
+    let v=0;
+    cards.forEach(c=>{const m=f==='all'||c.dataset.status===f;c.style.display=m?'':'none';if(m)v++;});
+    let em=document.getElementById('empty-state');
+    if(v===0){if(!em){em=document.createElement('div');em.id='empty-state';em.className='empty-state';em.textContent='No routes match this filter.';document.getElementById('route-list').appendChild(em);}}
+    else if(em)em.remove();
+  }));
+  document.getElementById('route-search').addEventListener('input',function(){
+    const q=this.value.toLowerCase();
+    cards.forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(q)?'':'none';});
+  });
+
+  function setTime(){
+    const n=new Date();
+    document.getElementById('depart-time').value=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  }
+  setTime();
 </script>
 </body>
 </html>
+
+
+

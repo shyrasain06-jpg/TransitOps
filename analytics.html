@@ -92,6 +92,39 @@
     @media(max-width:1100px){.kpi-row{grid-template-columns:1fr 1fr}.charts-row{grid-template-columns:1fr}}
     @media(max-width:780px){.sidebar{display:none}}
     @media(max-width:520px){.kpi-row{grid-template-columns:1fr}}
+
+    #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:9999;pointer-events:none}
+    .toast{display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:12px 18px;box-shadow:var(--shadow-lg);font-size:12.5px;font-weight:500;color:var(--text-primary);min-width:240px;max-width:340px;transform:translateX(120%);opacity:0;transition:transform 0.32s cubic-bezier(.22,1,.36,1),opacity 0.32s ease;pointer-events:all}
+    .toast.show{transform:translateX(0);opacity:1}
+    .toast-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:800}
+    .toast-success .toast-icon{background:var(--status-active-bg);color:var(--status-active)}
+    .toast-error .toast-icon{background:var(--status-alert-bg);color:var(--status-alert)}
+    .toast-info .toast-icon{background:var(--status-completed-bg);color:var(--status-completed)}
+    .toast-success{border-left:3px solid var(--status-active)}
+    .toast-error{border-left:3px solid var(--status-alert)}
+    .toast-info{border-left:3px solid var(--status-completed)}
+    .toast-msg{flex:1;line-height:1.4}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0;line-height:1}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:8000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.22s ease}
+    .modal-overlay.open{opacity:1;pointer-events:all}
+    .modal-box{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-xl);padding:26px 28px;width:100%;max-width:480px;box-shadow:var(--shadow-lg);transform:scale(.94) translateY(12px);transition:transform 0.26s cubic-bezier(.22,1,.36,1),opacity 0.26s ease;opacity:0}
+    .modal-overlay.open .modal-box{transform:scale(1) translateY(0);opacity:1}
+    .modal-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-subtle)}
+    .modal-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+    .modal-icon-blue{background:var(--status-completed-bg);color:var(--status-completed)}
+    .modal-icon-green{background:var(--status-active-bg);color:var(--status-active)}
+    .modal-title{font-size:15px;font-weight:800;color:var(--text-primary)}
+    .modal-subtitle{font-size:11px;color:var(--text-muted);margin-top:1px}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+    .modal-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:12.5px}
+    .modal-row:last-child{border-bottom:none}
+    .modal-row-label{color:var(--text-muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+    .modal-row-val{color:var(--text-primary);font-weight:600}
+    .modal-row-mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent-primary)}
+    .log-area{background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-secondary);height:130px;overflow-y:auto;line-height:1.7;margin-bottom:14px}
+    .log-ok{color:var(--status-active)}.log-info{color:var(--status-completed)}.log-warn{color:var(--status-delayed)}
+    .logs-table tbody tr{cursor:pointer}
   </style>
 </head>
 <body>
@@ -147,6 +180,7 @@
         <div class="topbar-chip" role="status">
           <span class="dot"></span><span>Operational</span>
         </div>
+        <button class="btn btn-ghost btn-sm" onclick="openReportModal()" style="margin-right:8px;padding:6px 12px;font-size:11px;font-weight:600;border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);cursor:pointer">Export Report</button>
         <div class="theme-toggle-wrap" role="group" aria-label="Theme toggle">
           <svg class="svg-icon" aria-hidden="true" style="color:var(--text-muted)"><use href="#icon-sun"/></svg>
           <input type="checkbox" id="theme-toggle-input" aria-label="Toggle light/dark mode" />
@@ -273,7 +307,7 @@
       </section>
       
       <section aria-label="Operation logs">
-        <h2 class="section-heading" id="logs-heading">Recent Operation Logs</h2>
+        <h2 class="section-heading" id="logs-heading">Recent Operation Logs <span style="font-weight:400;font-size:10px;margin-left:6px;color:var(--text-muted)">click to view details</span></h2>
         <div class="logs-wrapper" role="region" aria-labelledby="logs-heading">
           <div class="logs-header">
             <div class="logs-title">
@@ -365,12 +399,48 @@
   </div>
 </div>
 
+<div id="toast-container" aria-live="polite"></div>
+
+<div class="modal-overlay" id="modal-log" role="dialog" aria-modal="true" aria-labelledby="modal-log-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon modal-icon-blue">📋</div>
+      <div>
+        <div class="modal-title" id="modal-log-title">Log Entry Details</div>
+        <div class="modal-subtitle" id="modal-log-sub">Route and timing information</div>
+      </div>
+    </div>
+    <div id="modal-log-rows"></div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-log')" style="padding:8px 16px;border-radius:var(--radius-md);background:var(--bg-base);border:1px solid var(--border-subtle);cursor:pointer;font-weight:600">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-report" role="dialog" aria-modal="true" aria-labelledby="modal-report-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon modal-icon-green">⬇</div>
+      <div>
+        <div class="modal-title" id="modal-report-title">Export Analytics Report</div>
+        <div class="modal-subtitle">Generating weekly performance summary…</div>
+      </div>
+    </div>
+    <div class="log-area" id="report-log"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-report')" style="padding:8px 16px;border-radius:var(--radius-md);background:var(--bg-base);border:1px solid var(--border-subtle);cursor:pointer;font-weight:600">Close</button>
+      <button class="btn btn-primary" id="btn-download-report" style="padding:8px 16px;border-radius:var(--radius-md);background:var(--accent-primary);color:#fff;border:none;cursor:pointer;font-weight:600" disabled>Download Report</button>
+    </div>
+  </div>
+</div>
+
 <script>
   (function(){
     var clock=document.getElementById('live-clock');
     function tick(){var n=new Date();clock.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');}
     tick();setInterval(tick,1000);
   })();
+
   (function(){
     var STORAGE_KEY='transitops-theme';
     var sheet=document.getElementById('theme-stylesheet');
@@ -382,6 +452,75 @@
       else{sheet.href='style.css';localStorage.setItem(STORAGE_KEY,'light');}
     });
   })();
+
+  function showToast(msg,type='success',dur=3500){
+    const icons={success:'✓',error:'✕',info:'i'};
+    const c=document.getElementById('toast-container'),t=document.createElement('div');
+    t.className=`toast toast-${type}`;
+    t.innerHTML=`<div class="toast-icon">${icons[type]||'i'}</div><div class="toast-msg">${msg}</div><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+    c.appendChild(t);requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+    setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},dur);
+  }
+
+  function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+  function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+  document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id);}));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id));});
+
+  document.querySelectorAll('.logs-table tbody tr').forEach(row=>{
+    row.addEventListener('click',()=>{
+      const cells = row.querySelectorAll('td');
+      const time = cells[0].textContent;
+      const route = cells[1].textContent;
+      const path = cells[2].textContent;
+      const dur = cells[3].textContent;
+      const eff = cells[4].textContent;
+      const status = cells[5].textContent;
+      
+      document.getElementById('modal-log-title').textContent = 'Log Entry Details';
+      document.getElementById('modal-log-sub').textContent = route + ' • ' + time;
+      
+      document.getElementById('modal-log-rows').innerHTML=`
+        <div class="modal-row"><span class="modal-row-label">Time</span><span class="modal-row-val modal-row-mono">${time}</span></div>
+        <div class="modal-row"><span class="modal-row-label">Route</span><span class="modal-row-val modal-row-mono">${route}</span></div>
+        <div class="modal-row"><span class="modal-row-label">Path</span><span class="modal-row-val">${path}</span></div>
+        <div class="modal-row"><span class="modal-row-label">Duration</span><span class="modal-row-val">${dur}</span></div>
+        <div class="modal-row"><span class="modal-row-label">Efficiency</span><span class="modal-row-val">${eff}</span></div>
+        <div class="modal-row"><span class="modal-row-label">Status</span><span class="modal-row-val">${status}</span></div>
+      `;
+      openModal('modal-log');
+    });
+  });
+
+  function openReportModal(){
+    const area=document.getElementById('report-log');
+    const btn=document.getElementById('btn-download-report');
+    area.innerHTML='';btn.disabled=true;btn.style.opacity='0.5';
+    openModal('modal-report');
+    const lines=[
+      {t:0,   cls:'log-info',msg:'[INFO]  Initialising analytics report export…'},
+      {t:400, cls:'log-ok',  msg:'[OK]    Connected: TransitOps Analytics DB'},
+      {t:800, cls:'log-ok',  msg:'[OK]    Aggregating performance metrics for Jul 7 - Jul 13'},
+      {t:1200,cls:'log-ok',  msg:'[OK]    KPI summary compiled (3,102 trips)'},
+      {t:1600,cls:'log-info',msg:'[INFO]  Generating route volume & utilization charts…'},
+      {t:2000,cls:'log-ok',  msg:'[OK]    Charts rendered (PNG)'},
+      {t:2400,cls:'log-info',msg:'[INFO]  Compiling PDF report…'},
+      {t:3000,cls:'log-ok',  msg:'[OK]    transitops_analytics_wk28.pdf ready (2.4 MB)'},
+    ];
+    lines.forEach(({t,cls,msg})=>{
+      setTimeout(()=>{
+        const line=document.createElement('div');
+        line.className=cls;line.textContent=msg;
+        area.appendChild(line);area.scrollTop=area.scrollHeight;
+        if(t===3000){btn.disabled=false;btn.style.opacity='1';}
+      },t);
+    });
+  }
+
+  document.getElementById('btn-download-report').addEventListener('click',()=>{
+    showToast('Analytics report downloaded successfully.','success');
+    closeModal('modal-report');
+  });
 </script>
-</body>
 </html>
+
