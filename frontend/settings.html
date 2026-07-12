@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TransitOps System Settings - configure preferences and system parameters." />
+  <title>Settings - TransitOps</title>
+  <link id="theme-stylesheet" rel="stylesheet" href="style.css" />
+  <style>
+    
+    .settings-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:22px}
+    .settings-panel{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:20px 22px;display:flex;flex-direction:column;gap:0;box-shadow:var(--shadow-sm)}
+    .settings-panel-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border-subtle)}
+    .settings-panel-title{font-size:12.5px;font-weight:700;color:var(--text-primary)}
+    .settings-panel-icon{width:26px;height:26px;background:var(--accent-muted);border:1px solid var(--border-default);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--accent-primary);flex-shrink:0}
+    .settings-panel-icon svg{width:13px;height:13px;fill:currentColor}
+    .settings-section-divider{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+    .settings-section-divider::after{content:'';flex:1;height:1px;background:var(--border-subtle)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}
+    .form-group-mb{margin-bottom:14px}
+
+    
+    .toggle-setting{display:flex;flex-direction:row;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-subtle)}
+    .toggle-setting:last-of-type{border-bottom:none}
+    .toggle-label{font-size:13px;font-weight:600;color:var(--text-primary)}
+    .toggle-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+    .setting-switch-wrap{display:flex;align-items:center;gap:7px;flex-shrink:0}
+    .setting-switch-input{display:none}
+    .setting-switch-track{width:36px;height:20px;background:var(--border-default);border-radius:99px;position:relative;cursor:pointer;transition:background var(--transition-fast);border:1px solid var(--border-strong);flex-shrink:0;display:block}
+    .setting-switch-track::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:var(--bg-surface);border-radius:50%;transition:transform var(--transition-fast);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+    .setting-switch-input:checked+.setting-switch-track{background:var(--accent-primary);border-color:var(--accent-primary)}
+    .setting-switch-input:checked+.setting-switch-track::after{transform:translateX(16px);background:#fff}
+
+    
+    .profile-avatar{width:56px;height:56px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;margin-bottom:10px;box-shadow:var(--shadow-glow)}
+    .profile-name{font-size:16px;font-weight:700;color:var(--text-primary)}
+    .profile-role{font-size:12px;color:var(--text-muted);margin-bottom:16px}
+    .info-row{display:flex;justify-content:space-between;font-size:12px;padding:8px 0;border-bottom:1px solid var(--border-subtle);color:var(--text-secondary)}
+    .info-row:last-child{border-bottom:none}
+    .info-row strong{color:var(--text-primary);font-weight:600}
+    .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--status-active);margin-right:5px;animation:pulse-dot 2s infinite}
+
+    
+    .danger-zone{border-color:rgba(192,57,43,.30)!important}
+    .danger-zone-text{font-size:11px;color:var(--status-alert);margin-bottom:12px;line-height:1.5}
+
+    
+    .theme-toggle-wrap{display:flex;align-items:center;gap:7px}
+    #theme-toggle-input{display:none}
+    .toggle-track{width:36px;height:20px;background:var(--border-default);border-radius:99px;position:relative;cursor:pointer;transition:background var(--transition-fast);border:1px solid var(--border-strong);flex-shrink:0;display:block}
+    .toggle-track::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:var(--bg-surface);border-radius:50%;transition:transform var(--transition-fast);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+    #theme-toggle-input:checked+.toggle-track{background:var(--accent-primary);border-color:var(--accent-primary)}
+    #theme-toggle-input:checked+.toggle-track::after{transform:translateX(16px);background:#fff}
+    .topbar-actions{display:flex;align-items:center;gap:10px}
+
+    
+    #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:9999;pointer-events:none}
+    .toast{display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:12px 18px;box-shadow:var(--shadow-lg);font-size:13px;font-weight:500;color:var(--text-primary);min-width:260px;max-width:360px;transform:translateX(120%);opacity:0;transition:transform 0.32s cubic-bezier(.22,1,.36,1),opacity 0.32s ease;pointer-events:all}
+    .toast.show{transform:translateX(0);opacity:1}
+    .toast-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:800}
+    .toast-success .toast-icon{background:var(--status-active-bg);color:var(--status-active)}
+    .toast-error .toast-icon{background:var(--status-alert-bg);color:var(--status-alert)}
+    .toast-info .toast-icon{background:var(--status-completed-bg);color:var(--status-completed)}
+    .toast-success{border-left:3px solid var(--status-active)}
+    .toast-error{border-left:3px solid var(--status-alert)}
+    .toast-info{border-left:3px solid var(--status-completed)}
+    .toast-msg{flex:1}
+    .toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0;line-height:1;margin-left:4px}
+    .toast-close:hover{color:var(--text-primary)}
+
+    
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:8000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.22s ease}
+    .modal-overlay.open{opacity:1;pointer-events:all}
+    .modal-box{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-xl);padding:28px 30px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);transform:scale(.94) translateY(12px);transition:transform 0.26s cubic-bezier(.22,1,.36,1),opacity 0.26s ease;opacity:0}
+    .modal-overlay.open .modal-box{transform:scale(1) translateY(0);opacity:1}
+    .modal-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+    .modal-icon-danger{background:var(--status-alert-bg);color:var(--status-alert)}
+    .modal-icon-info{background:var(--accent-muted);color:var(--accent-primary)}
+    .modal-title{font-size:16px;font-weight:800;color:var(--text-primary);margin-bottom:6px}
+    .modal-body{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:22px}
+    .modal-body strong{color:var(--text-primary)}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+
+    
+    .log-area{background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-secondary);height:140px;overflow-y:auto;line-height:1.7;margin-bottom:14px}
+    .log-line-ok{color:var(--status-active)}
+    .log-line-info{color:var(--status-completed)}
+    .log-line-warn{color:var(--status-delayed)}
+
+    
+    [data-tooltip]{position:relative;cursor:help}
+    [data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);background:var(--bg-panel);color:var(--text-primary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:5px 10px;font-size:11px;font-weight:500;white-space:nowrap;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:opacity 0.18s ease;z-index:100}
+    [data-tooltip]:hover::after{opacity:1}
+
+    
+    .form-control.error,.form-select.error{border-color:var(--status-alert);box-shadow:0 0 0 3px rgba(192,57,43,.12)}
+    .field-error{font-size:10.5px;color:var(--status-alert);margin-top:3px;display:none}
+    .field-error.show{display:block}
+    
+    .perm-cell{cursor:pointer;user-select:none;text-align:center;}
+    .perm-pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;transition:all var(--transition-fast);min-width:50px;}
+    .perm-pill.full{background:var(--status-active-bg);color:var(--status-active);}
+    .perm-pill.view{background:var(--bg-base);border:1px solid var(--border-default);color:var(--text-secondary);}
+    .perm-pill.none{background:var(--status-alert-bg);color:var(--status-alert);}
+    .perm-cell:hover .perm-pill{transform:scale(1.05);}
+  </style>  
+    
+    .text-link{font-size:11.5px;color:var(--accent-primary);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+    .text-link:hover{color:var(--accent-primary-h)}
+
+    @media(max-width:900px){.settings-layout{grid-template-columns:1fr}}
+    @media(max-width:780px){.sidebar{display:none}}
+    @media(max-width:520px){.form-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="icon-dispatch" viewBox="0 0 24 24"><path d="M20.2 7.1l-1.5-2.6c-.2-.3-.5-.5-.9-.5H6.2c-.4 0-.7.2-.9.5L3.8 7.1C2.8 7.4 2 8.3 2 9.4V19c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9.4c0-1.1-.8-2-1.8-2.3zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5z"/></symbol>
+  <symbol id="icon-analytics" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></symbol>
+  <symbol id="icon-maintenance" viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.5 7.1.9 10.2 2.9 12.2c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.5.5-1.1.1-1.5z"/></symbol>
+  <symbol id="icon-expenses" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M19.1 12.9c.1-.3.1-.6.1-.9s0-.6-.1-.9l2-1.6c.2-.1.2-.4.1-.6l-1.9-3.3c-.1-.2-.4-.3-.6-.2l-2.4 1c-.5-.4-1-.7-1.6-.9l-.4-2.5C14.2 3.2 14 3 13.7 3h-3.4c-.3 0-.5.2-.5.4L9.4 5.9c-.6.2-1.1.5-1.6.9L5.4 5.8c-.2-.1-.5 0-.6.2L2.9 9.3c-.1.2-.1.5.1.6l2 1.6c-.1.3-.1.6-.1.9s0 .6.1.9l-2 1.6c-.2.1-.2.4-.1.6l1.9 3.3c.1.2.4.3.6.2l2.4-1c.5.4 1 .7 1.6.9l.4 2.5c.1.2.3.4.5.4h3.4c.3 0 .5-.2.5-.4l.4-2.5c.6-.2 1.1-.5 1.6-.9l2.4 1c.2.1.5 0 .6-.2l1.9-3.3c.1-.2.1-.5-.1-.6l-2-1.6zM12 15.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/></symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></symbol>
+  <symbol id="icon-fleet" viewBox="0 0 24 24"><path d="M18 11l-5-6H4l-3 6v3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-3h-2zm-12 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm6.5-6H5.5l2-4h5v4zm1.5 6c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2.5-6h-2V9h3.5l-1.5 2z"/></symbol>
+  <symbol id="icon-sun" viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7zm0-5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 17a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1zM4.22 5.64a1 1 0 0 1 1.42-1.42l.7.71a1 1 0 0 1-1.41 1.41l-.71-.7zm13.02 12.72a1 1 0 0 1 1.42-1.42l.7.71a1 1 0 0 1-1.41 1.41l-.71-.7zM3 12a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2H4a1 1 0 0 1-1-1zm16 0a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2h-1a1 1 0 0 1-1-1zM4.22 18.36a1 1 0 0 1 0-1.41l.71-.71a1 1 0 1 1 1.41 1.41l-.7.71a1 1 0 0 1-1.42 0zm13.02-12.72a1 1 0 0 1 0-1.41l.71-.71a1 1 0 1 1 1.41 1.41l-.7.71a1 1 0 0 1-1.42 0z"/></symbol>
+  <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></symbol>
+</svg>
+<div class="modal-overlay" id="modal-reset" role="dialog" aria-modal="true" aria-labelledby="modal-reset-title">
+  <div class="modal-box">
+    <div class="modal-icon modal-icon-danger">⚠</div>
+    <div class="modal-title" id="modal-reset-title">Reset All Settings?</div>
+    <div class="modal-body">
+      This will permanently restore <strong>all system settings</strong> to their factory defaults. Your profile information will be retained, but all custom preferences, dispatch rules, and notification configurations will be lost.<br><br>
+      <strong>This action cannot be undone.</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reset')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmReset()">Yes, Reset Everything</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-export" role="dialog" aria-modal="true" aria-labelledby="modal-export-title">
+  <div class="modal-box">
+    <div class="modal-icon modal-icon-info" style="font-size:16px;">⬇</div>
+    <div class="modal-title" id="modal-export-title">Export System Logs</div>
+    <div class="modal-body" style="margin-bottom:12px;">Generating a full log dump from the past 30 days. This may take a moment.</div>
+    <div class="log-area" id="export-log-area"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-export')">Close</button>
+      <button class="btn btn-primary" id="export-download-btn" disabled>Download .log</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-password" role="dialog" aria-modal="true" aria-labelledby="modal-password-title">
+  <div class="modal-box">
+    <div class="modal-icon modal-icon-info">🔒</div>
+    <div class="modal-title" id="modal-password-title">Change Password</div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">Current Password</label>
+      <input type="password" class="form-control" id="pwd-current" placeholder="Enter current password" />
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">New Password</label>
+      <input type="password" class="form-control" id="pwd-new" placeholder="Min. 8 characters" />
+      <div class="field-error" id="pwd-new-err">Password must be at least 8 characters.</div>
+    </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label class="form-label">Confirm New Password</label>
+      <input type="password" class="form-control" id="pwd-confirm" placeholder="Repeat new password" />
+      <div class="field-error" id="pwd-confirm-err">Passwords do not match.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-password')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+<div id="toast-container" aria-live="polite"></div>
+
+<div class="app-shell">
+
+  <aside class="sidebar" role="navigation" aria-label="Primary navigation">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><svg><use href="#icon-fleet"/></svg></div>
+      <div class="logo-text">Transit<span>Ops</span></div>
+    </div>
+    <nav class="sidebar-nav" aria-label="Main menu">
+      <span class="nav-section-label">Operations</span>
+      <a href="Dashboard.html" class="nav-item" id="nav-dashboard"><svg><use href="#icon-dispatch"/></svg> Dashboard</a>
+      <a href="dispatch.html" class="nav-item" id="nav-dispatch"><svg><use href="#icon-dispatch"/></svg> Dispatch</a>
+      <a href="analytics.html" class="nav-item" id="nav-analytics"><svg><use href="#icon-analytics"/></svg> Analytics</a>
+      <a href="maintenance.html" class="nav-item" id="nav-maintenance"><svg><use href="#icon-maintenance"/></svg> Maintenance</a>
+      <a href="fleet.html" class="nav-item" id="nav-fleet"><svg><use href="#icon-fleet"/></svg> Fleet</a>
+      <span class="nav-section-label">Finance</span>
+      <a href="expenses.html" class="nav-item" id="nav-expenses"><svg><use href="#icon-expenses"/></svg> Expenses</a>
+      <span class="nav-section-label">System</span>
+      <a href="settings.html" class="nav-item active" id="nav-settings" aria-current="page"><svg><use href="#icon-settings"/></svg> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" style="cursor:default;">
+        <svg><use href="#icon-user"/></svg>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-primary)">Console 01</div>
+          <div style="font-size:10px;color:var(--text-muted)">Active Operator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar" role="banner">
+      <div>
+        <div class="topbar-title">System Settings</div>
+        <div class="topbar-subtitle">Configure preferences and system parameters</div>
+      </div>
+      <div class="topbar-right topbar-actions">
+        <div id="live-clock" aria-live="polite">--:--:--</div>
+        <div class="topbar-chip" role="status">
+          <span class="dot"></span><span>Operational</span>
+        </div>
+        <div class="theme-toggle-wrap" role="group" aria-label="Theme toggle">
+          <svg class="svg-icon" aria-hidden="true" style="color:var(--text-muted)"><use href="#icon-sun"/></svg>
+          <input type="checkbox" id="theme-toggle-input" aria-label="Toggle light/dark mode" />
+          <label class="toggle-track" for="theme-toggle-input" title="Toggle Light / Dark Mode"></label>
+          <svg class="svg-icon" aria-hidden="true" style="color:var(--text-muted)"><use href="#icon-moon"/></svg>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-body" id="main-content">
+      <div class="settings-layout">
+        <div class="settings-left">
+          <article class="settings-panel" style="margin-bottom:16px;">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon"><svg><use href="#icon-user"/></svg></div>
+              <h3 class="settings-panel-title">Operator Profile</h3>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="profile-name">Full Name</label>
+                <input type="text" class="form-control" id="profile-name" value="Console 01" />
+                <div class="field-error" id="profile-name-err">Name is required.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="profile-role">RBAC Role</label>
+                <select class="form-select" id="profile-role">
+                  <option value="dispatcher" selected>Active Dispatcher</option>
+                  <option value="supervisor">Shift Supervisor</option>
+                  <option value="admin">System Administrator</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group form-group-mb">
+              <label class="form-label" for="profile-email">Email Address</label>
+              <input type="email" class="form-control" id="profile-email" value="console01@transitops.local" />
+              <div class="field-error" id="profile-email-err">Please enter a valid email address.</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+              <span class="text-link" onclick="openModal('modal-password')">Change Password</span>
+              <button class="btn btn-primary" id="btn-save-profile" onclick="saveProfile()">Save Profile</button>
+            </div>
+          </article>
+          <article class="settings-panel" style="margin-bottom:16px;">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon"><svg><use href="#icon-settings"/></svg></div>
+              <h3 class="settings-panel-title">System Preferences</h3>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="pref-tz">Timezone</label>
+                <select class="form-select" id="pref-tz">
+                  <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
+                  <option value="UTC">UTC</option>
+                  <option value="America/New_York">America/New_York (EST)</option>
+                  <option value="Europe/London">Europe/London (GMT)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pref-currency">Currency</label>
+                <select class="form-select" id="pref-currency">
+                  <option value="INR" selected>INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="pref-lang">Language</label>
+                <select class="form-select" id="pref-lang">
+                  <option value="en" selected>English</option>
+                  <option value="hi">Hindi</option>
+                  <option value="mr">Marathi</option>
+                </select>
+              </div>
+              <div class="form-group form-group-mb" data-tooltip="How often the dashboard auto-refreshes data">
+                <label class="form-label" for="pref-refresh">Auto-Refresh Interval</label>
+                <select class="form-select" id="pref-refresh">
+                  <option value="30s">30 Seconds</option>
+                  <option value="1m" selected>1 Minute</option>
+                  <option value="5m">5 Minutes</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn btn-primary" onclick="saveSection('System Preferences')">Save Preferences</button>
+            </div>
+          </article>
+          <article class="settings-panel" style="margin-bottom:16px;">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon"><svg><use href="#icon-analytics"/></svg></div>
+              <h3 class="settings-panel-title">Notification Settings</h3>
+            </div>
+            <div class="toggle-setting">
+              <div>
+                <div class="toggle-label">Critical Alerts</div>
+                <div class="toggle-sub">Immediate notifications for vehicle breakdowns or accidents.</div>
+              </div>
+              <div class="setting-switch-wrap">
+                <input type="checkbox" id="notif-critical" class="setting-switch-input" checked onchange="onToggleChange(this,'Critical Alerts')" />
+                <label for="notif-critical" class="setting-switch-track"></label>
+              </div>
+            </div>
+            <div class="toggle-setting">
+              <div>
+                <div class="toggle-label">Route Delays</div>
+                <div class="toggle-sub">Alerts for vehicles running 15+ minutes behind schedule.</div>
+              </div>
+              <div class="setting-switch-wrap">
+                <input type="checkbox" id="notif-delay" class="setting-switch-input" checked onchange="onToggleChange(this,'Route Delays')" />
+                <label for="notif-delay" class="setting-switch-track"></label>
+              </div>
+            </div>
+            <div class="toggle-setting">
+              <div>
+                <div class="toggle-label">Maintenance Due</div>
+                <div class="toggle-sub">Weekly digest of vehicles nearing service thresholds.</div>
+              </div>
+              <div class="setting-switch-wrap">
+                <input type="checkbox" id="notif-maint" class="setting-switch-input" checked onchange="onToggleChange(this,'Maintenance Due')" />
+                <label for="notif-maint" class="setting-switch-track"></label>
+              </div>
+            </div>
+            <div class="toggle-setting">
+              <div>
+                <div class="toggle-label">Daily Report Email</div>
+                <div class="toggle-sub">End-of-day summary reports sent to your email.</div>
+              </div>
+              <div class="setting-switch-wrap">
+                <input type="checkbox" id="notif-daily" class="setting-switch-input" onchange="onToggleChange(this,'Daily Report Email')" />
+                <label for="notif-daily" class="setting-switch-track"></label>
+              </div>
+            </div>
+            <div class="toggle-setting">
+              <div>
+                <div class="toggle-label">SMS Alerts</div>
+                <div class="toggle-sub">Text messages for high-priority dispatches.</div>
+              </div>
+              <div class="setting-switch-wrap">
+                <input type="checkbox" id="notif-sms" class="setting-switch-input" onchange="onToggleChange(this,'SMS Alerts')" />
+                <label for="notif-sms" class="setting-switch-track"></label>
+              </div>
+            </div>
+          </article>
+          <article class="settings-panel">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon"><svg><use href="#icon-dispatch"/></svg></div>
+              <h3 class="settings-panel-title">Dispatch Rules</h3>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="rule-radius">Max Dispatch Radius (km)</label>
+                <input type="number" class="form-control" id="rule-radius" value="50" min="1" max="500" />
+                <div class="field-error" id="rule-radius-err">Must be between 1 and 500 km.</div>
+              </div>
+              <div class="form-group form-group-mb">
+                <label class="form-label" for="rule-priority">Default Priority</label>
+                <select class="form-select" id="rule-priority">
+                  <option value="normal" selected>Normal</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+            </div>
+            <div class="toggle-setting">
+              <div>
+                <div class="toggle-label">Auto-assign Drivers</div>
+                <div class="toggle-sub">Match available drivers to new routes based on proximity.</div>
+              </div>
+              <div class="setting-switch-wrap">
+                <input type="checkbox" id="rule-auto" class="setting-switch-input" onchange="onToggleChange(this,'Auto-assign Drivers')" />
+                <label for="rule-auto" class="setting-switch-track"></label>
+              </div>
+            </div>
+            <div class="toggle-setting" style="margin-bottom:14px;">
+              <div>
+                <div class="toggle-label">Require Dispatch Notes</div>
+                <div class="toggle-sub">Mandatory comment field before route confirmation.</div>
+              </div>
+              <div class="setting-switch-wrap">
+                <input type="checkbox" id="rule-notes" class="setting-switch-input" checked onchange="onToggleChange(this,'Require Dispatch Notes')" />
+                <label for="rule-notes" class="setting-switch-track"></label>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn btn-primary" onclick="saveDispatchRules()">Save Rules</button>
+            </div>
+          </article>
+
+          <article class="settings-panel">
+            <div class="settings-panel-header">
+              <div class="settings-panel-icon"><svg><use href="#icon-user"/></svg></div>
+              <h3 class="settings-panel-title">Role-Based Access Control (RBAC)</h3>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Viewing as <strong id="rbac-viewing-as">Active Dispatcher</strong>. Click any permission to change it.</div>
+            
+            <div class="logs-wrapper" style="margin-bottom:16px;">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Role</th><th>Fleet</th><th>Drivers</th><th>Trips</th><th>Fuel/Exp.</th><th>Analytics</th>
+                  </tr>
+                </thead>
+                <tbody id="rbacBody">
+                </tbody>
+              </table>
+            </div>
+            
+            <div style="display:flex;gap:14px;font-size:11px;color:var(--text-muted);margin-bottom:16px;">
+              <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--status-active);"></span> Full access</span>
+              <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--text-muted);"></span> View only</span>
+              <span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--status-alert);"></span> No access</span>
+            </div>
+            
+            <div id="unsavedBar" style="display:none;align-items:center;justify-content:space-between;background:var(--status-alert-bg);border:1px solid rgba(192,57,43,0.3);padding:10px 14px;border-radius:var(--radius-md);font-size:11.5px;color:var(--status-alert);font-weight:600;">
+              <span>Unsaved permission changes.</span>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-sm btn-ghost" style="border-color:var(--status-alert);color:var(--status-alert);" onclick="discardRbac()">Discard</button>
+                <button class="btn btn-sm btn-danger" style="background:var(--status-alert);color:#fff;" onclick="saveRbac()">Save</button>
+              </div>
+            </div>
+          </article>
+
+        </div>
+        <div class="settings-right">
+          <article class="settings-panel" style="align-items:center;text-align:center;margin-bottom:16px;">
+            <div class="profile-avatar">C1</div>
+            <div class="profile-name">Console 01</div>
+            <div class="profile-role">Active Dispatcher</div>
+            <div style="width:100%;">
+              <div class="info-row"><span>Last Login</span><strong>Today, 08:30 AM</strong></div>
+              <div class="info-row"><span>Session</span><strong id="session-timer">—</strong></div>
+              <div class="info-row"><span>Station ID</span><strong>HQ-DSP-01</strong></div>
+            </div>
+          </article>
+          <article class="settings-panel" style="margin-bottom:16px;">
+            <div class="settings-section-divider" style="margin-top:0;">System Info</div>
+            <div class="info-row"><span>Version</span><strong>v2.4.1</strong></div>
+            <div class="info-row"><span>Uptime</span><strong>99.98%</strong></div>
+            <div class="info-row"><span>Database</span><strong><span class="status-dot"></span>Online</strong></div>
+            <div class="info-row"><span>API Status</span><strong><span class="status-dot"></span>Operational</strong></div>
+            <div class="info-row"><span>Build Date</span><strong>Jul 10, 2026</strong></div>
+          </article>
+          <article class="settings-panel danger-zone">
+            <div class="settings-section-divider" style="margin-top:0;color:var(--status-alert);">Danger Zone</div>
+            <div class="danger-zone-text">These actions are irreversible. Please proceed with extreme caution and ensure you have a backup.</div>
+            <button class="btn btn-danger btn-full" style="margin-bottom:8px;" onclick="openModal('modal-reset')">Reset All Settings</button>
+            <button class="btn btn-ghost btn-full" onclick="openExportModal()">Export System Logs</button>
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  // Authorization Gate
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = 'Sign-in.html';
+  }
+
+  const sessionStart = Date.now();
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+    const h = Math.floor(elapsed/3600), m = Math.floor((elapsed%3600)/60), s = elapsed%60;
+    const sessionEl = document.getElementById('session-timer');
+    if (sessionEl) sessionEl.textContent = (h?h+'h ':'')+m+'m '+s+'s';
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  (function(){
+    const tog = document.getElementById('theme-toggle-input');
+    const ss  = document.getElementById('theme-stylesheet');
+    const saved = localStorage.getItem('transitops-theme') || 'light';
+    tog.checked = saved === 'dark';
+    ss.href = saved === 'dark' ? 'style-dark.css' : 'style.css';
+    tog.addEventListener('change', function(){
+      ss.href = this.checked ? 'style-dark.css' : 'style.css';
+      localStorage.setItem('transitops-theme', this.checked ? 'dark' : 'light');
+    });
+  })();
+
+  // Sidebar mapping
+  const navLinks = {
+    'Dashboard': 'Dashboard.html',
+    'Fleet': 'fleet.html',
+    'Drivers': 'Settings & RBAC.html',
+    'Trips': 'dispatch.html',
+    'Maintenance': 'maintenance.html',
+    'Fuel & Expenses': 'expenses.html',
+    'Analytics': 'analytics.html',
+    'Settings': 'settings.html'
+  };
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const label = item.querySelector('.nav-label')?.textContent.trim();
+    if (label && navLinks[label]) {
+      item.addEventListener('click', () => {
+        window.location.href = navLinks[label];
+      });
+    }
+  });
+
+  function showToast(msg, type='success', duration=3500) {
+    const icons = { success:'✓', error:'✕', info:'i' };
+    const container = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast toast-${type}`;
+    t.innerHTML = `<div class="toast-icon">${icons[type]||'i'}</div><div class="toast-msg">${msg}</div><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+    container.appendChild(t);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+    setTimeout(()=>{
+      t.classList.remove('show');
+      setTimeout(()=>t.remove(), 400);
+    }, duration);
+  }
+
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => { if(overlay && e.target===overlay) closeModal(overlay.id); });
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id));
+  });
+
+  // Load active user profile details
+  const currentUserObj = JSON.parse(localStorage.getItem('user'));
+  if (currentUserObj) {
+    document.getElementById('profile-name').value = currentUserObj.name;
+    document.getElementById('profile-email').value = currentUserObj.email;
+    document.querySelector('.profile-name').textContent = currentUserObj.name;
+    document.querySelector('.profile-avatar').textContent = currentUserObj.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    
+    // Header topbar profile updates
+    const headerName = document.querySelector('.user-name');
+    if (headerName) headerName.textContent = currentUserObj.name;
+    const badgeSpan = document.querySelector('.role-badge span');
+    if (badgeSpan) badgeSpan.textContent = currentUserObj.role;
+    const avatarDiv = document.querySelector('.role-avatar');
+    if (avatarDiv) {
+      avatarDiv.textContent = currentUserObj.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    }
+  }
+
+  window.saveProfile = function() {
+    const nameEl  = document.getElementById('profile-name');
+    const emailEl = document.getElementById('profile-email');
+    const nameErr  = document.getElementById('profile-name-err');
+    const emailErr = document.getElementById('profile-email-err');
+    let valid = true;
+
+    nameEl.classList.remove('error');  nameErr.classList.remove('show');
+    emailEl.classList.remove('error'); emailErr.classList.remove('show');
+
+    if(!nameEl.value.trim()) {
+      nameEl.classList.add('error'); nameErr.classList.add('show'); valid = false;
+    }
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRe.test(emailEl.value.trim())) {
+      emailEl.classList.add('error'); emailErr.classList.add('show'); valid = false;
+    }
+    if(!valid) { showToast('Please fix the errors before saving.','error'); return; }
+
+    const btn = document.getElementById('btn-save-profile');
+    btn.textContent = 'Saving…'; btn.disabled = true;
+
+    // Update in localStorage
+    if (currentUserObj) {
+      currentUserObj.name = nameEl.value.trim();
+      currentUserObj.email = emailEl.value.trim();
+      localStorage.setItem('user', JSON.stringify(currentUserObj));
+    }
+
+    setTimeout(() => {
+      btn.textContent = 'Save Profile'; btn.disabled = false;
+      showToast('Profile saved successfully.', 'success');
+      // Update UI elements
+      document.querySelector('.profile-name').textContent = nameEl.value.trim();
+      document.querySelector('.profile-avatar').textContent = nameEl.value.trim().split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const headerName = document.querySelector('.user-name');
+      if (headerName) headerName.textContent = nameEl.value.trim();
+    }, 600);
+  }
+
+  window.saveSection = function(name) {
+    showToast(`<strong>${name}</strong> updated.`, 'success');
+  }
+
+  window.saveDispatchRules = function() {
+    const r = document.getElementById('rule-radius');
+    const rErr = document.getElementById('rule-radius-err');
+    r.classList.remove('error'); rErr.classList.remove('show');
+    const v = parseInt(r.value);
+    if(isNaN(v)||v<1||v>500) {
+      r.classList.add('error'); rErr.classList.add('show');
+      showToast('Please fix the errors before saving.','error'); return;
+    }
+    showToast('<strong>Dispatch Rules</strong> saved.','success');
+  }
+
+  window.confirmReset = function() {
+    closeModal('modal-reset');
+    showToast('All settings have been reset to defaults.', 'info', 4000);
+    setTimeout(()=>{
+      document.getElementById('profile-name').value='Console 01';
+      document.getElementById('profile-email').value='console01@transitops.local';
+      document.getElementById('rule-radius').value='50';
+    },400);
+  }
+
+  window.onToggleChange = function(el, name) {
+    const state = el.checked ? 'enabled' : 'disabled';
+    showToast(`<strong>${name}</strong> ${state}.`, el.checked ? 'success' : 'info');
+  }
+
+  // Export logs download
+  window.openExportModal = function() {
+    const area = document.getElementById('export-log-area');
+    const btn  = document.getElementById('export-download-btn');
+    area.innerHTML = '';
+    btn.disabled = true;
+    openModal('modal-export');
+
+    const lines = [
+      {t:0,   cls:'log-line-info', msg:'[INFO]  Initialising log export…'},
+      {t:400, cls: 'log-line-ok',   msg:'[OK]    Connected to database: MongoDB/transitops'},
+      {t:900, cls: 'log-line-ok',   msg: `[OK]    Auth verified — ${currentUserObj ? currentUserObj.name : 'Console 01'}`},
+      {t:1300,cls:'log-line-info', msg:'[INFO]  Fetching dispatch logs from API…'},
+      {t:1800,cls: 'log-line-ok',   msg:'[OK]    Dispatch logs exported'},
+      {t:2100,cls:'log-line-info', msg:'[INFO]  Fetching maintenance logs from API…'},
+      {t:2500,cls: 'log-line-ok',   msg:'[OK]    Maintenance logs exported'},
+      {t:2800,cls:'log-line-warn', msg:'[WARN]  Logs verified and formatted successfully'},
+      {t:3100,cls:'log-line-info', msg:'[INFO]  Compressing archive…'},
+      {t:3600,cls: 'log-line-ok',   msg:'[OK]    transitops_fleet_analytics.csv ready'},
+    ];
+    lines.forEach(({t,cls,msg})=>{
+      setTimeout(() => {
+        if(area) {
+          const line = document.createElement('div');
+          line.className = cls;
+          line.textContent = msg;
+          area.appendChild(line);
+          area.scrollTop = area.scrollHeight;
+        }
+        if(t===3600 && btn) btn.disabled = false;
+      }, t);
+    });
+  }
+
+  document.getElementById('export-download-btn').addEventListener('click', async () => {
+    try {
+      const res = await fetch('/api/reports/export', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to export CSV report');
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'transitops_fleet_analytics.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      showToast('System logs downloaded successfully.','success');
+      closeModal('modal-export');
+    } catch (err) {
+      console.error(err);
+      showToast(err.message, 'error');
+    }
+  });
+
+  window.submitPassword = function() {
+    const newEl = document.getElementById('pwd-new');
+    const confEl = document.getElementById('pwd-confirm');
+    const newErr = document.getElementById('pwd-new-err');
+    const confErr = document.getElementById('pwd-confirm-err');
+    newEl.classList.remove('error');  newErr.classList.remove('show');
+    confEl.classList.remove('error'); confErr.classList.remove('show');
+    let valid = true;
+    if(newEl.value.length < 8) {
+      newEl.classList.add('error'); newErr.classList.add('show'); valid = false;
+    }
+    if(newEl.value !== confEl.value) {
+      confEl.classList.add('error'); confErr.classList.add('show'); valid = false;
+    }
+    if(!valid) return;
+    closeModal('modal-password');
+    showToast('Password updated successfully.','success');
+    document.getElementById('pwd-current').value='';
+    document.getElementById('pwd-new').value='';
+    document.getElementById('pwd-confirm').value='';
+  }
+
+  // Populate RBAC overview table dynamically
+  function loadRbac() {
+    const rbacUserRole = currentUserObj ? currentUserObj.role : 'Dispatcher';
+    const viewingEl = document.getElementById('rbac-viewing-as');
+    if (viewingEl) viewingEl.textContent = rbacUserRole;
+
+    const rolesList = [
+      { name: 'Fleet Manager', fleet: 'Full', drivers: 'Full', trips: 'Full', fuel: 'Full', analytics: 'Full' },
+      { name: 'Dispatcher', fleet: 'View', drivers: 'View', trips: 'Full', fuel: 'View', analytics: 'View' },
+      { name: 'Safety Officer', fleet: 'View', drivers: 'Full', trips: 'View', fuel: 'No', analytics: 'View' },
+      { name: 'Financial Analyst', fleet: 'View', drivers: 'No', trips: 'No', fuel: 'Full', analytics: 'Full' }
+    ];
+
+    const getPill = (perm) => {
+      if (perm === 'Full') return '<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--status-active);" title="Full Access"></span>';
+      if (perm === 'View') return '<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--text-muted);" title="View Only"></span>';
+      return '<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--status-alert);" title="No Access"></span>';
+    };
+
+    const tbody = document.getElementById('rbacBody');
+    if (tbody) {
+      tbody.innerHTML = '';
+      rolesList.forEach(r => {
+        const tr = document.createElement('tr');
+        if (r.name === rbacUserRole) {
+          tr.style.fontWeight = '800';
+          tr.style.background = 'rgba(41,171,135,0.06)';
+        }
+        tr.innerHTML = `
+          <td style="font-weight:inherit;">${r.name} ${r.name === rbacUserRole ? ' (You)' : ''}</td>
+          <td>${getPill(r.fleet)}</td>
+          <td>${getPill(r.drivers)}</td>
+          <td>${getPill(r.trips)}</td>
+          <td>${getPill(r.fuel)}</td>
+          <td>${getPill(r.analytics)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', loadRbac);
+</script>
+</body>
+</html>
+
+
+
+
+
