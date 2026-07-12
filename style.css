@@ -10,14 +10,14 @@
   --color-mint:     #F1FFFA;
   --color-forest:   #464E47;
 
-  /* Matte Light surface stack */
-  --bg-base:        #F1F3F5; /* Neutral light grey background */
-  --bg-surface:     #FFFFFF; /* White for topbars and contrast */
-  --bg-panel:       #FFFFFF;
-  --bg-card:        #FFFFFF; /* White cards pop on grey base */
-  --bg-card-hover:  #F8F9FA;
-  --bg-input:       #F1F3F5; /* Grey inputs */
-  --bg-forest-tile: #F8F9FA;
+  /* 50% Ice White, 40% Matte Grey, 10% Emerald */
+  --bg-base:        #FAFCFB; /* 50% Ice White base */
+  --bg-surface:     #F1F3F5; /* 40% Matte Grey (Topbar) */
+  --bg-panel:       #F1F3F5; /* 40% Matte Grey (Sidebar) */
+  --bg-card:        #F1F3F5; /* 40% Matte Grey (Cards) */
+  --bg-card-hover:  #E9ECEF; /* Darker grey hover */
+  --bg-input:       #FFFFFF; /* White inputs pop off the grey */
+  --bg-forest-tile: #FFFFFF;
 
   /* Neutral Grey Borders */
   --border-subtle:  #E5E7EB;
