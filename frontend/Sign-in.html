@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransitOps — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#FDFDFB;
+    --black:#0A0B0A;
+    --emerald:#29AB87;
+    --emerald-strong:#1F8B6E;
+    --emerald-soft:rgba(41,171,135,0.12);
+    --wine:#6E1E36;
+    --wine-strong:#5A1729;
+    --wine-soft:rgba(110,30,54,0.09);
+    --lime:#B8DB5E;
+
+    --bg:#F1F3F5;
+    --surface:#FAFCFB;
+    --text:#0A0B0A;
+    --text-muted:#5B6360;
+    --border:#DEE1DA;
+    --shadow: 0 20px 50px -20px rgba(10,11,10,0.18);
+  }
+  html[data-theme="dark"]{
+    --bg:#0A0C0B;
+    --surface:#141715;
+    --text:#F2F3EF;
+    --text-muted:#909992;
+    --border:#252B27;
+    --emerald:#34C79B;
+    --emerald-strong:#29AB87;
+    --emerald-soft:rgba(52,199,155,0.16);
+    --wine:#B8496A;
+    --wine-strong:#9C3A56;
+    --wine-soft:rgba(184,73,106,0.16);
+    --lime:#D6EE8F;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    min-height:100vh;
+    transition:background 0.35s ease, color 0.35s ease;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  /* ============ LEFT / BRAND PANEL (always dark, brand-consistent) ============ */
+  .panel-left{
+    width:46%;
+    min-width:400px;
+    background:var(--black);
+    color:#EFEFEA;
+    padding:44px 44px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    position:relative;
+    overflow:hidden;
+  }
+  .orb{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(60px);
+    opacity:0.35;
+    pointer-events:none;
+  }
+  .orb-emerald{
+    width:340px;height:340px;
+    background:var(--emerald);
+    top:-90px; left:-100px;
+    animation: float1 16s ease-in-out infinite;
+  }
+  .orb-wine{
+    width:280px;height:280px;
+    background:var(--wine);
+    bottom:-80px; right:-60px;
+    animation: float2 19s ease-in-out infinite;
+  }
+  @keyframes float1{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%{ transform:translate(30px,40px) scale(1.08); }
+  }
+  @keyframes float2{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%{ transform:translate(-25px,-30px) scale(1.06); }
+  }
+
+  .brand-row{ position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; }
+  .brand-top{ display:flex; align-items:center; gap:14px; }
+  .logo-mark{
+    width:38px;height:38px;border-radius:9px;
+    background:linear-gradient(155deg, var(--lime), #9FC24A);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .logo-mark svg{width:20px;height:20px;}
+  .brand-name{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.45rem; }
+  .brand-tag{ font-size:0.66rem; letter-spacing:0.14em; text-transform:uppercase; color:#8B948E; margin-top:3px; }
+
+  .clock{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    color:#B8BFB9;
+    text-align:right;
+    line-height:1.4;
+  }
+  .clock .time{ font-size:0.95rem; color:#EFEFEA; font-weight:600; }
+
+  .signal-wrap{ position:relative; z-index:1; margin-top:32px; flex:1; }
+  .signal-heading{
+    font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--lime); margin-bottom:26px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .signal-heading::before{
+    content:''; width:8px; height:8px; border-radius:2px;
+    background:var(--lime); flex-shrink:0;
+  }
+  .line-container{ position:relative; padding-left:6px; }
+  .track{
+    position:absolute; left:15px; top:6px; bottom:6px; width:2px;
+    background:rgba(255,255,255,0.1);
+  }
+  .track-fill{
+    position:absolute; left:15px; top:6px; width:2px;
+    background:var(--emerald);
+    transition:height 0.5s cubic-bezier(.4,0,.2,1), top 0.5s cubic-bezier(.4,0,.2,1), background 0.4s ease;
+  }
+  .track-fill.restricted{ background:var(--wine); }
+  .stop{
+    position:relative; display:flex; align-items:flex-start; gap:16px;
+    padding:12px 0; cursor:pointer;
+  }
+  .stop-dot{
+    width:30px;height:30px;border-radius:50%;
+    background:#1B1E1C; border:2px solid rgba(255,255,255,0.12);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    transition:all 0.35s ease; z-index:1;
+  }
+  .stop-dot .inner{ width:7px;height:7px;border-radius:50%; background:#8B948E; transition:all 0.35s ease; }
+  .stop.active .stop-dot{ background:var(--emerald); border-color:var(--emerald); box-shadow:0 0 0 5px var(--emerald-soft); }
+  .stop.active .stop-dot .inner{ background:var(--black); width:9px;height:9px; }
+  .stop.active.restricted .stop-dot{ background:var(--wine); border-color:var(--wine); box-shadow:0 0 0 5px var(--wine-soft); }
+  .stop-role{ font-weight:600; font-size:0.92rem; color:#EFEFEA; transition:color 0.3s ease; }
+  .stop-scope{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color:#8B948E; margin-top:2px; }
+  .stop.active .stop-role{ color:var(--emerald); }
+  .stop.active.restricted .stop-role{ color:var(--wine); }
+
+  .vehicle{
+    position:absolute; left:8.5px; width:13px;height:13px;border-radius:50%;
+    background:#EFEFEA;
+    box-shadow:0 0 0 4px var(--black), 0 0 14px 2px var(--emerald);
+    transition: top 0.5s cubic-bezier(.4,0,.2,1), box-shadow 0.4s ease;
+    z-index:2;
+  }
+  .vehicle.restricted{ box-shadow:0 0 0 4px var(--black), 0 0 14px 2px var(--wine); }
+  .vehicle.confirmed{ animation: confirmPulse 1.4s ease-in-out infinite; }
+  @keyframes confirmPulse{
+    0%,100%{ box-shadow:0 0 0 4px var(--black), 0 0 14px 2px var(--emerald); }
+    50%{ box-shadow:0 0 0 4px var(--black), 0 0 22px 6px var(--emerald); }
+  }
+
+  .panel-left-footer{
+    position:relative; z-index:1;
+    font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.06em;
+    color:#7B837D; padding-top:20px; border-top:1px solid rgba(255,255,255,0.08);
+    display:flex; justify-content:space-between;
+  }
+
+  /* ============ RIGHT / FORM PANEL ============ */
+  .panel-right{
+    flex:1; display:flex; align-items:center; justify-content:center;
+    padding:36px 24px; position:relative;
+    background:var(--bg);
+    transition:background 0.35s ease;
+  }
+  .theme-toggle{
+    position:absolute; top:28px; right:32px;
+    display:flex; align-items:center; gap:8px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:999px; padding:5px; cursor:pointer;
+    box-shadow:var(--shadow);
+  }
+  .theme-toggle button{
+    border:none; background:none; cursor:pointer;
+    width:30px;height:30px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text-muted);
+    transition:all 0.25s ease;
+  }
+  .theme-toggle button.active{
+    background:var(--text); color:var(--surface);
+  }
+  .theme-toggle svg{ width:16px;height:16px; }
+
+  .form-card{ width:100%; max-width:400px; }
+  .form-title{ font-family:'Space Grotesk', sans-serif; font-size:1.7rem; font-weight:600; margin:0 0 6px 0; }
+  .form-sub{ color:var(--text-muted); font-size:0.9rem; margin:0 0 28px 0; }
+
+  .field{ margin-bottom:18px; }
+  .field label{
+    display:block; font-family:'IBM Plex Mono', monospace; font-size:0.66rem;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:7px;
+  }
+  .input-shell{ position:relative; display:flex; align-items:center; }
+  input[type="email"], input[type="password"], input[type="text"], select{
+    width:100%; padding:12px 14px; border-radius:8px;
+    border:1.5px solid var(--border); background:var(--surface);
+    font-size:0.92rem; font-family:'Inter', sans-serif; color:var(--text);
+    transition:border-color 0.2s ease, box-shadow 0.2s ease, background 0.3s ease, color 0.3s ease;
+  }
+  input:focus, select:focus{
+    outline:none; border-color:var(--emerald); box-shadow:0 0 0 3px var(--emerald-soft);
+  }
+  input.field-error{ border-color:var(--wine); }
+  input.field-error:focus{ box-shadow:0 0 0 3px var(--wine-soft); }
+
+  .toggle-visibility{
+    position:absolute; right:12px; background:none; border:none; cursor:pointer;
+    color:var(--text-muted); padding:4px; display:flex; align-items:center;
+  }
+  .toggle-visibility:hover{ color:var(--text); }
+  .toggle-visibility svg{ width:18px;height:18px; }
+
+  .capslock-warn{
+    display:none; align-items:center; gap:6px;
+    font-size:0.72rem; color:var(--wine); margin-top:6px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .capslock-warn.show{ display:flex; }
+
+  select{
+    appearance:none; -webkit-appearance:none;
+    background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; cursor:pointer;
+  }
+  html[data-theme="light"] select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%235B6360' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+  html[data-theme="dark"] select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23909992' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+
+  .row-between{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:24px; font-size:0.85rem;
+  }
+  .remember{ display:flex; align-items:center; gap:8px; color:var(--text-muted); }
+  .remember input{ width:15px;height:15px; accent-color:var(--emerald); cursor:pointer; }
+  .forgot-link{ color:var(--text); font-weight:500; text-decoration:none; border-bottom:1px solid var(--border); }
+  .forgot-link:hover{ border-color:var(--text); }
+
+  .btn-signin{
+    width:100%; padding:13px; border-radius:8px; border:none;
+    background:var(--emerald); color:#fff; font-weight:600; font-size:0.95rem; cursor:pointer;
+    transition:background 0.2s ease, transform 0.05s ease;
+  }
+  .btn-signin:hover{ background:var(--emerald-strong); }
+  .btn-signin:active{ transform:translateY(1px); }
+  .btn-signin:disabled{ background:var(--wine); color:#fff; cursor:not-allowed; opacity:0.85; }
+
+  .error-banner{
+    display:none; align-items:flex-start; gap:10px;
+    background:var(--wine-soft); border:1px solid var(--wine); border-radius:8px;
+    padding:12px 14px; margin-bottom:18px; font-size:0.82rem; color:var(--wine-strong);
+  }
+  html[data-theme="dark"] .error-banner{ color:#F0AFC0; }
+  .error-banner.show{ display:flex; }
+  .error-banner svg{ flex-shrink:0; margin-top:1px; width:16px;height:16px; }
+  .error-banner strong{ display:block; margin-bottom:2px; font-size:0.84rem; }
+
+  .success-banner{
+    display:none; align-items:flex-start; gap:10px;
+    background:var(--emerald-soft); border:1px solid var(--emerald); border-radius:8px;
+    padding:12px 14px; margin-bottom:18px; font-size:0.82rem; color:var(--emerald-strong);
+    animation: bannerIn 0.35s ease;
+  }
+  .success-banner.show{ display:flex; }
+  .success-banner svg{ flex-shrink:0; margin-top:1px; width:16px;height:16px; }
+  .success-banner strong{ display:block; margin-bottom:2px; font-size:0.84rem; }
+  @keyframes bannerIn{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
+
+  .demo-hint{
+    font-size:0.72rem; color:var(--text-muted); margin-top:6px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .demo-hint strong{ color:var(--emerald-strong); }
+
+  .scope-note{
+    margin-top:24px; padding-top:18px; border-top:1px solid var(--border);
+    font-size:0.78rem; color:var(--text-muted); line-height:1.5;
+  }
+
+  /* ---------- Entrance animations ---------- */
+  .brand-row, .signal-wrap, .panel-left-footer{
+    animation: fadeUp 0.6s ease both;
+  }
+  .brand-row{ animation-delay:0.02s; }
+  .signal-wrap{ animation-delay:0.12s; }
+  .panel-left-footer{ animation-delay:0.28s; }
+  .form-card{ animation: fadeUp 0.6s ease 0.08s both; }
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ============ RESPONSIVE — landscape-first ============ */
+  @media (max-width: 860px) and (orientation: portrait){
+    body{ flex-direction:column; }
+    .panel-left{ width:100%; min-width:0; padding:28px 24px; }
+    .signal-wrap{ margin-top:28px; }
+    .panel-right{ padding:32px 20px 56px; }
+    .theme-toggle{ top:16px; right:16px; }
+  }
+  @media (max-width: 860px) and (orientation: landscape){
+    .panel-left{ padding:28px 30px; min-width:320px; }
+    .panel-right{ padding:24px 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .orb, .track-fill, .vehicle, .vehicle.confirmed, .stop-dot, .stop-role, .brand-row, .signal-wrap, .panel-left-footer, .form-card, .success-banner{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="panel-left">
+    <div class="orb orb-emerald"></div>
+    <div class="orb orb-wine"></div>
+
+    <div>
+      <div class="brand-row">
+        <div class="brand-top">
+          <div class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 17 L10 7 L14 13 L20 5" stroke="#0A0B0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="20" cy="5" r="1.8" fill="#0A0B0A"/>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-name">TransitOps</div>
+            <div class="brand-tag">Smart transport operations platform</div>
+          </div>
+        </div>
+        <div class="clock">
+          <div id="clockTime" class="time mono">--:--:--</div>
+          <div id="clockDate" class="mono">—</div>
+        </div>
+      </div>
+
+      <div class="signal-wrap">
+        <div class="signal-heading">One login · Four roles on the line</div>
+        <div class="line-container" id="lineContainer">
+          <div class="track"></div>
+          <div class="track-fill" id="trackFill"></div>
+          <div class="vehicle" id="vehicle"></div>
+
+          <div class="stop" data-role="Fleet Manager" data-index="0">
+            <div class="stop-dot"><div class="inner"></div></div>
+            <div><div class="stop-role">Fleet Manager</div><div class="stop-scope">→ FLEET, MAINTENANCE</div></div>
+          </div>
+          <div class="stop" data-role="Dispatcher" data-index="1">
+            <div class="stop-dot"><div class="inner"></div></div>
+            <div><div class="stop-role">Dispatcher</div><div class="stop-scope">→ DASHBOARD, TRIPS</div></div>
+          </div>
+          <div class="stop" data-role="Safety Officer" data-index="2">
+            <div class="stop-dot"><div class="inner"></div></div>
+            <div><div class="stop-role">Safety Officer</div><div class="stop-scope">→ DRIVERS, COMPLIANCE</div></div>
+          </div>
+          <div class="stop" data-role="Financial Analyst" data-index="3">
+            <div class="stop-dot"><div class="inner"></div></div>
+            <div><div class="stop-role">Financial Analyst</div><div class="stop-scope">→ FUEL &amp; EXPENSES, ANALYTICS</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-left-footer">
+      <span>TRANSITOPS © 2026</span>
+      <span>RBAC ENABLED</span>
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <div class="theme-toggle" id="themeToggle">
+      <button id="btnLight" class="active" aria-label="Light theme">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5V5M12 19V21.5M4.2 4.2L6 6M18 18L19.8 19.8M2.5 12H5M19 12H21.5M4.2 19.8L6 18M18 6L19.8 4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <button id="btnDark" aria-label="Dark theme">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <div class="form-card">
+      <h1 class="form-title">Sign in to your account</h1>
+      <p class="form-sub">Enter your credentials to continue.</p>
+
+      <div class="error-banner" id="errorBanner">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16.2" r="1" fill="currentColor"/></svg>
+        <div id="errorText">
+          <strong>Invalid credentials.</strong>
+          <span>Check your email and password and try again.</span>
+        </div>
+      </div>
+
+      <div class="success-banner" id="successBanner">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong>Signed in.</strong>
+          <span id="successText">Redirecting to your dashboard…</span>
+        </div>
+      </div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="you@transitops.com" required>
+          <div class="demo-hint">Demo: <strong>raven.k@transitops.in</strong> + any password signs in.</div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-shell">
+            <input type="password" id="password" placeholder="••••••••" required>
+            <button type="button" class="toggle-visibility" id="toggleVis" aria-label="Show password">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
+                <path d="M2 12C2 12 5.5 5.5 12 5.5C18.5 5.5 22 12 22 12C22 12 18.5 18.5 12 18.5C5.5 18.5 2 12 2 12Z" stroke="currentColor" stroke-width="1.6"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+            </button>
+          </div>
+          <div class="capslock-warn" id="capsWarn">⚠ Caps Lock is on</div>
+        </div>
+
+        <div class="field">
+          <label for="role">Role (RBAC)</label>
+          <select id="role">
+            <option value="0">Fleet Manager</option>
+            <option value="1" selected>Dispatcher</option>
+            <option value="2">Safety Officer</option>
+            <option value="3">Financial Analyst</option>
+          </select>
+        </div>
+
+        <div class="row-between">
+          <label class="remember"><input type="checkbox" checked>Remember me</label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-signin" id="signInBtn">Sign in</button>
+      </form>
+
+      <div class="scope-note">
+        Access is scoped by the role selected above — the line on the left updates live to show what that role can reach after sign-in.
+      </div>
+    </div>
+  </div>
+
+<script>
+  /* ---------- Theme toggle ---------- */
+  const html = document.documentElement;
+  const btnLight = document.getElementById('btnLight');
+  const btnDark = document.getElementById('btnDark');
+  function setTheme(mode){
+    html.setAttribute('data-theme', mode);
+    btnLight.classList.toggle('active', mode === 'light');
+    btnDark.classList.toggle('active', mode === 'dark');
+  }
+  btnLight.addEventListener('click', () => setTheme('light'));
+  btnDark.addEventListener('click', () => setTheme('dark'));
+
+  /* ---------- Live clock ---------- */
+  function tick(){
+    const now = new Date();
+    document.getElementById('clockTime').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+    document.getElementById('clockDate').textContent = now.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  /* ---------- Signal line (route stops) ---------- */
+  const stops = Array.from(document.querySelectorAll('.stop'));
+  const trackFill = document.getElementById('trackFill');
+  const vehicle = document.getElementById('vehicle');
+  const roleSelect = document.getElementById('role');
+  let restricted = false;
+
+  function stopCenterY(stop){ return stop.offsetTop + stop.querySelector('.stop-dot').offsetHeight/2; }
+
+  function renderLine(index){
+    stops.forEach((s,i) => {
+      s.classList.toggle('active', i === index);
+      s.classList.toggle('restricted', i === index && restricted);
+    });
+    const y = stopCenterY(stops[index]);
+    const startY = stopCenterY(stops[0]);
+    trackFill.style.top = startY + 'px';
+    trackFill.style.height = Math.max(0, y - startY) + 'px';
+    trackFill.classList.toggle('restricted', restricted);
+    vehicle.style.top = (y - 6.5) + 'px';
+    vehicle.classList.toggle('restricted', restricted);
+  }
+
+  stops.forEach(stop => {
+    stop.addEventListener('click', () => {
+      roleSelect.value = stop.dataset.index;
+      renderLine(parseInt(stop.dataset.index, 10));
+    });
+  });
+  roleSelect.addEventListener('change', e => renderLine(parseInt(e.target.value, 10)));
+  window.addEventListener('load', () => renderLine(parseInt(roleSelect.value, 10)));
+  window.addEventListener('resize', () => renderLine(parseInt(roleSelect.value, 10)));
+
+  /* ---------- Password visibility ---------- */
+  const pwInput = document.getElementById('password');
+  const toggleVis = document.getElementById('toggleVis');
+  toggleVis.addEventListener('click', () => {
+    const isPw = pwInput.type === 'password';
+    pwInput.type = isPw ? 'text' : 'password';
+    toggleVis.setAttribute('aria-label', isPw ? 'Hide password' : 'Show password');
+  });
+
+  /* ---------- Caps Lock detection ---------- */
+  const capsWarn = document.getElementById('capsWarn');
+  pwInput.addEventListener('keyup', e => {
+    if (typeof e.getModifierState === 'function'){
+      capsWarn.classList.toggle('show', e.getModifierState('CapsLock'));
+    }
+  });
+  pwInput.addEventListener('blur', () => capsWarn.classList.remove('show'));
+
+  /* ---------- Demo error / lockout flow ---------- */
+  const form = document.getElementById('loginForm');
+  const errorBanner = document.getElementById('errorBanner');
+  const errorText = document.getElementById('errorText');
+  const successBanner = document.getElementById('successBanner');
+  const successText = document.getElementById('successText');
+  const signInBtn = document.getElementById('signInBtn');
+  const emailInput = document.getElementById('email');
+  let attempts = 0;
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const emailVal = emailInput.value.trim().toLowerCase();
+    const pwVal = pwInput.value;
+
+    if (emailVal === 'raven.k@transitops.in' && pwVal.length > 0){
+      errorBanner.classList.remove('show');
+      emailInput.classList.remove('field-error');
+      pwInput.classList.remove('field-error');
+      emailInput.disabled = true;
+      pwInput.disabled = true;
+      signInBtn.disabled = true;
+      signInBtn.textContent = 'Signed in';
+      successText.textContent = `Redirecting to the ${roleSelect.options[roleSelect.selectedIndex].text} dashboard…`;
+      successBanner.classList.add('show');
+      document.getElementById('vehicle').classList.add('confirmed');
+      return;
+    }
+
+    attempts += 1;
+    emailInput.classList.add('field-error');
+    pwInput.classList.add('field-error');
+    errorBanner.classList.add('show');
+
+    if (attempts >= 5){
+      restricted = true;
+      errorText.innerHTML = '<strong>Account locked.</strong><span>Too many failed attempts. Try again in 15 minutes or reset your password.</span>';
+      signInBtn.disabled = true;
+      signInBtn.textContent = 'Account locked';
+      emailInput.disabled = true;
+      pwInput.disabled = true;
+      renderLine(parseInt(roleSelect.value, 10));
+    } else {
+      errorText.innerHTML = `<strong>Invalid credentials.</strong><span>Attempt ${attempts} of 5 — account locks after 5 failed attempts.</span>`;
+    }
+  });
+
+  [emailInput, pwInput].forEach(inp => {
+    inp.addEventListener('input', () => inp.classList.remove('field-error'));
+  });
+</script>
+
+</body>
+</html>
