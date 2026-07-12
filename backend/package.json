@@ -9,12 +9,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.10.0",
-      "onFail": "download"
-    }
-  },
-  "type": "module"
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.7.4"
+  }
 }
