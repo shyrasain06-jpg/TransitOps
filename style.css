@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    TransitOps — Emerald Light Design System
    Light Mode: White base, #29AB87 accent, #464E47 dark text
    ============================================================ */
@@ -10,19 +10,19 @@
   --color-mint:     #F1FFFA;
   --color-forest:   #464E47;
 
-  /* Light surface stack */
-  --bg-base:        #F4FAF7;
-  --bg-surface:     #FFFFFF;
+  /* Matte Light surface stack */
+  --bg-base:        #F1F3F5; /* Neutral light grey background */
+  --bg-surface:     #FFFFFF; /* White for topbars and contrast */
   --bg-panel:       #FFFFFF;
-  --bg-card:        #FFFFFF;
-  --bg-card-hover:  #F0FBF6;
-  --bg-input:       #F8FEFB;
-  --bg-forest-tile: #EEF7F2;
+  --bg-card:        #FFFFFF; /* White cards pop on grey base */
+  --bg-card-hover:  #F8F9FA;
+  --bg-input:       #F1F3F5; /* Grey inputs */
+  --bg-forest-tile: #F8F9FA;
 
-  /* Borders */
-  --border-subtle:  rgba(41, 171, 135, 0.10);
-  --border-default: rgba(41, 171, 135, 0.20);
-  --border-strong:  rgba(41, 171, 135, 0.38);
+  /* Neutral Grey Borders */
+  --border-subtle:  #E5E7EB;
+  --border-default: #D1D5DB;
+  --border-strong:  #9CA3AF;
 
   /* Accent */
   --accent-primary:   #29AB87;
@@ -33,20 +33,20 @@
 
   /* Status */
   --status-active:       #1a9e73;
-  --status-active-bg:    rgba(26, 158, 115, 0.08);
+  --status-active-bg:    rgba(26, 158, 115, 0.10);
   --status-delayed:      #b07c10;
-  --status-delayed-bg:   rgba(176, 124, 16, 0.08);
+  --status-delayed-bg:   rgba(176, 124, 16, 0.10);
   --status-alert:        #c0392b;
-  --status-alert-bg:     rgba(192, 57, 43, 0.08);
+  --status-alert-bg:     rgba(192, 57, 43, 0.10);
   --status-idle:         #6b7c6d;
-  --status-idle-bg:      rgba(107, 124, 109, 0.08);
+  --status-idle-bg:      rgba(107, 124, 109, 0.10);
   --status-completed:    #2980b9;
-  --status-completed-bg: rgba(41, 128, 185, 0.08);
+  --status-completed-bg: rgba(41, 128, 185, 0.10);
 
-  /* Typography */
-  --text-primary:   #1A2C22;
-  --text-secondary: #3D5948;
-  --text-muted:     #7A9A85;
+  /* Typography — neutral greys */
+  --text-primary:   #111827;
+  --text-secondary: #4B5563;
+  --text-muted:     #6B7280;
 
   /* Radius */
   --radius-sm:  4px;
@@ -54,10 +54,10 @@
   --radius-lg:  12px;
   --radius-xl:  18px;
 
-  /* Shadows — light mode uses softer, lighter shadows */
-  --shadow-sm:   0 1px 4px rgba(41,171,135,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:   0 4px 16px rgba(41,171,135,0.10), 0 2px 6px rgba(0,0,0,0.06);
-  --shadow-lg:   0 10px 32px rgba(41,171,135,0.12), 0 4px 10px rgba(0,0,0,0.08);
+  /* Shadows — pure neutral, soft opacity for a flat matte feel */
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:   0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  --shadow-lg:   0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
   --shadow-glow: 0 0 16px rgba(41,171,135,0.20);
 
   --transition-fast: 0.14s ease;
